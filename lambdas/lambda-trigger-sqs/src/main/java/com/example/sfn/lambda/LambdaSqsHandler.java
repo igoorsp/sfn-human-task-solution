@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-@Named("sqsEmailHandler")
+@Named("lambdaSqsHandler")
 public class LambdaSqsHandler implements RequestHandler<SQSEvent, Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LambdaSqsHandler.class);
@@ -29,9 +29,10 @@ public class LambdaSqsHandler implements RequestHandler<SQSEvent, Void> {
     private final ObjectMapper objectMapper;
 
     @Inject
-    public LambdaSqsHandler(DynamoDbRepository dynamoDbRepository) {
+    public LambdaSqsHandler(DynamoDbRepository dynamoDbRepository,
+                            ObjectMapper objectMapper) {
         this.dynamoDbRepository = dynamoDbRepository;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     @Override

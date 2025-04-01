@@ -19,6 +19,7 @@ public class MainRestRouteBuilder extends RouteBuilder {
                 .component("servlet")
                 .bindingMode(RestBindingMode.json)
                 .contextPath("/")
+                .enableCORS(false) // Desative o CORS do Camel para evitar conflitos
                 .port(8080);
 
         // AWS DynamoDB

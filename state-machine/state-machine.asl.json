@@ -1,0 +1,73 @@
+{
+    "Comment": "Fluxo de aprovação com Callback via SQS",
+    "StartAt": "Lambda Invoke",
+    "States": {
+        "Lambda Invoke": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-1:835996031136:function:lambda-formatter:$LATEST"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.ServiceException",
+                        "Lambda.AWSLambdaException",
+                        "Lambda.SdkClientException",
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 1,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2,
+                    "JitterStrategy": "FULL"
+                }
+            ],
+            "Next": "EnviarParaFilaAprovacao"
+        },
+        "EnviarParaFilaAprovacao": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+            "Parameters": {
+                "QueueUrl": "https://sqs.us-east-1.amazonaws.com/835996031136/state-machine-queue",
+                "MessageBody": {
+                    "executionId.$": "$$.Execution.Id",
+                    "taskToken.$": "$$.Task.Token",
+                    "executionStartTime.$": "$$.Execution.StartTime",
+                    "businessKey.$": "$.businessKey"
+                }
+            },
+            "Next": "AguardarRespostaAprovacao",
+            "TimeoutSeconds": 120
+        },
+        "AguardarRespostaAprovacao": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Next": "ProcessarAprovacao",
+                    "Variable": "$.result",
+                    "StringEquals": "APPROVED"
+                },
+                {
+                    "Next": "ProcessarRejeicao",
+                    "Variable": "$.result",
+                    "StringEquals": "REJECTED"
+                }
+            ]
+        },
+        "ProcessarAprovacao": {
+            "Type": "Pass",
+            "Result": "Pedido aprovado!",
+            "Next": "Success"
+        },
+        "Success": {
+            "Type": "Succeed"
+        },
+        "ProcessarRejeicao": {
+            "Type": "Pass",
+            "Result": "Pedido rejeitado!",
+            "Next": "Success"
+        }
+    }
+}

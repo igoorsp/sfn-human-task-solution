@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>lambda-trigger-sqs</module>
+        <module>lambda-formatter</module>
     </modules>
 
     <properties>
