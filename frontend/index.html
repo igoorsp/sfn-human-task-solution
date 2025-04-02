@@ -107,7 +107,7 @@
             }
         }
 
-        async function listarTasks() {  
+        async function listarTasks() {
             try {
                 const status = document.getElementById('status').value;
                 const response = await fetch(`${API_BASE}/tasks?status=${status}`, {
@@ -116,10 +116,20 @@
                         'Origin': 'http://127.0.0.1:5501'
                     }
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                const tasks = await response.json();
-                renderTasks(tasks);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+
+                const data = await response.json();
+
+                // Verifica se o resultado é um array
+                if (!Array.isArray(data)) {
+                    throw new Error(data.message || 'Formato inesperado da resposta');
+                }
+
+                renderTasks(data);
 
             } catch (error) {
                 console.error('Error:', error);

@@ -69,12 +69,7 @@ public class GetDynamoDbRoute extends RouteBuilder {
                                 response.put(TASK_TOKEN, item.getOrDefault(TASK_TOKEN, AttributeValue.builder().s("").build()).s());
                                 return response;
                             }).toList();
-
-                    if (items.isEmpty()) {
-                        exchange.getIn().setBody("No items found with status: " + status);
-                    } else {
                         exchange.getIn().setBody(items);
-                    }
                 })
                 .log("Query result: ${body}");
     }
